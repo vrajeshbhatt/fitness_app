@@ -125,4 +125,12 @@
   .glow-tertiary {
     box-shadow: 0 0 20px rgba(255, 221, 76, 0.15);
   }
+
+  .text-glow {
+    text-shadow: 0 0 8px rgba(0, 212, 255, 0.8);
+  }
+
+  .mana-glow {
+    box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);
+  }
 }

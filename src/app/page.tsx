@@ -1,159 +1,203 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { createClient } from '@/utils/supabase/client'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Dumbbell, Flame, Zap, ArrowRight } from 'lucide-react'
 
-interface TodaysPlan {
-  recommendations?: Array<{
-    name: string
-    muscle_group: string
-    reps: number
-    sets: number
-  }>
-  exercises?: Array<{
-    name: string
-    muscle_group: string
-    reps: number
-    sets: number
-  }>
+const questData = {
+  player: {
+    level: 5,
+    rank: 'E',
+    className: 'Shadow Class',
+    currentXp: 12450,
+    maxXp: 15000,
+    streak: 14,
+    totalXp: '12.4K',
+    gold: 850,
+  },
+  quests: [
+    { id: 1, name: 'Morning Run (5km)', status: 'completed', xp: 500 },
+    { id: 2, name: 'Strength Training', status: 'active', completed: 0, total: 4, xp: 800 },
+    { id: 3, name: 'Evening Stretch', status: 'locked', unlockTime: '20:00', xp: 200 },
+  ],
 }
 
-export default function Home() {
-  const [plan, setPlan] = useState<TodaysPlan | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [user, setUser] = useState<{ email: string } | null>(null)
-  const [planLoading, setPlanLoading] = useState(false)
-  const router = useRouter()
-  const supabase = createClient()
 
-  useEffect(() => {
-    const init = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
-        router.push('/login')
-        return
-      }
-      setUser({ email: user.email || '' })
-      setLoading(false)
-      fetchPlan()
-    }
-    init()
-  }, [supabase, router])
 
-  const fetchPlan = async () => {
-    setPlanLoading(true)
-    try {
-      const res = await fetch('/api/plan')
-      if (res.ok) {
-        const data = await res.json()
-        setPlan(data)
-      }
-    } catch {
-      // Fallback plan will be shown
-    } finally {
-      setPlanLoading(false)
-    }
-  }
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse text-slate-400">Loading...</div>
-      </div>
-    )
-  }
+export default function HomeDashboard() {
+  const xpPercent = (questData.player.currentXp / questData.player.maxXp) * 100
 
   return (
-    <div className="min-h-screen p-4 pb-20">
-      <div className="max-w-md mx-auto space-y-6">
-        <header className="pt-4">
-          <h1 className="text-2xl font-bold text-white">Calisthenics AI</h1>
-          <p className="text-slate-400">Your intelligent fitness coach</p>
-        </header>
-
-        <section className="bg-gradient-to-br from-blue-900/40 to-purple-900/40 rounded-2xl p-6 border border-blue-800/30">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <Zap className="text-yellow-400" size={20} />
-              <h2 className="font-semibold text-white">Today&apos;s Optimal Routine</h2>
-            </div>
+    <div className="min-h-screen bg-[#0a0a0f] pb-[100px] pt-[80px]">
+      <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 bg-[#0a0a0f]/80 backdrop-blur-md border-b border-cyan-900/50 shadow-[0_4px_20px_rgba(0,212,255,0.1)]">
+        <div className="flex items-center gap-2">
+          <div className="w-10 h-10 rounded-full border border-cyan-500/30 flex items-center justify-center bg-surface-container-highest shadow-[0_0_8px_rgba(0,212,255,0.3)]">
+            <span className="font-heading text-primary-container font-bold text-glow">
+              {questData.player.rank}
+            </span>
           </div>
-          
-          {planLoading ? (
-            <div className="py-6 text-center">
-              <div className="animate-pulse text-slate-400">Generating your plan...</div>
-            </div>
-          ) : plan && (plan.recommendations?.length || plan.exercises?.length) ? (
-            <div className="space-y-3">
-              {(plan.recommendations || plan.exercises || []).map((ex, i) => (
-                <div key={i} className="flex items-center justify-between p-3 bg-slate-900/50 rounded-lg">
-                  <div>
-                    <p className="font-medium text-white">{ex.name}</p>
-                    <p className="text-xs text-slate-400">{ex.muscle_group}</p>
+        </div>
+        <h1 className="text-cyan-400 font-heading uppercase tracking-widest font-bold m-0 leading-none">
+          SYSTEM STATUS
+        </h1>
+        <button className="text-cyan-400 hover:text-cyan-300 transition-colors cursor-pointer active:scale-95 duration-100 p-2">
+          <span className="material-symbols-outlined">notifications_active</span>
+        </button>
+      </header>
+
+      <main className="max-w-4xl mx-auto px-4 md:px-6 flex flex-col gap-10">
+        <section className="flex flex-col gap-4">
+          <div className="bg-surface p-6 rounded-xl border border-surface-container-high relative overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.5)]">
+            <div className="absolute inset-0 bg-gradient-to-r from-primary-container/5 to-transparent pointer-events-none" />
+            <div className="relative flex items-center gap-4">
+              <div className="w-20 h-20 rounded-full border-2 border-primary-container/50 overflow-hidden shrink-0">
+                <div className="w-full h-full bg-gradient-to-br from-purple-900 to-blue-900 flex items-center justify-center">
+                  <span className="text-3xl">🧙</span>
+                </div>
+              </div>
+              <div className="flex-1 flex flex-col gap-1">
+                <h2 className="font-heading text-[32px] text-on-surface m-0 uppercase tracking-wide">
+                  Level {questData.player.level} Hunter
+                </h2>
+                <p className="font-body text-[16px] text-on-surface-variant m-0">{questData.player.className}</p>
+                <div className="mt-2 flex flex-col gap-1 w-full">
+                  <div className="flex justify-between items-end">
+                    <span className="font-heading text-[12px] text-primary-container font-bold leading-[1.0] tracking-[0.1em] uppercase">
+                      XP PROGRESS
+                    </span>
+                    <span className="font-heading text-[12px] text-on-surface-variant font-bold leading-[1.0] tracking-[0.1em] uppercase">
+                      {questData.player.currentXp.toLocaleString()} / {questData.player.maxXp.toLocaleString()}
+                    </span>
                   </div>
-                  <div className="text-right">
-                    <p className="text-sm text-white">{ex.sets}x{ex.reps}</p>
+                  <div className="h-2 w-full bg-surface-container-highest rounded-full overflow-hidden border border-outline-variant/30">
+                    <div
+                      className="h-full bg-gradient-to-r from-inverse-primary to-primary-container relative"
+                      style={{ width: `${xpPercent}%` }}
+                    >
+                      <div className="absolute right-0 top-0 bottom-0 w-4 bg-white/40 blur-[2px]" />
+                    </div>
                   </div>
                 </div>
-              ))}
-              <Link href="/log" className="flex items-center justify-center gap-2 w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors">
-                Start Workout <ArrowRight size={18} />
-              </Link>
-            </div>
-          ) : (
-            <div className="text-center py-6">
-              <p className="text-slate-300 mb-4">No plan generated yet</p>
-              <Link href="/log" className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors">
-                <Dumbbell size={18} /> Log First Workout
-              </Link>
-            </div>
-          )}
-        </section>
-
-        <div className="grid grid-cols-2 gap-4">
-          <Link href="/log" className="bg-slate-900 p-4 rounded-xl border border-slate-800 hover:border-blue-500/50 transition-colors">
-            <Dumbbell className="text-blue-400 mb-2" size={24} />
-            <h3 className="font-medium text-white">Log Workout</h3>
-            <p className="text-xs text-slate-400">Record your sets</p>
-          </Link>
-          <Link href="/dashboard" className="bg-slate-900 p-4 rounded-xl border border-slate-800 hover:border-purple-500/50 transition-colors">
-            <Flame className="text-orange-400 mb-2" size={24} />
-            <h3 className="font-medium text-white">Dashboard</h3>
-            <p className="text-xs text-slate-400">View progress</p>
-          </Link>
-        </div>
-
-        <section className="bg-slate-900 rounded-xl p-4 border border-slate-800">
-          <h2 className="font-medium text-white mb-3">Quick Stats</h2>
-          <div className="grid grid-cols-3 gap-4 text-center">
-            <div>
-              <p className="text-2xl font-bold text-blue-400">0</p>
-              <p className="text-xs text-slate-400">Workouts</p>
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-green-400">-</p>
-              <p className="text-xs text-slate-400">Streak</p>
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-purple-400">-</p>
-              <p className="text-xs text-slate-400">Level</p>
+              </div>
             </div>
           </div>
         </section>
 
-        <button
-          onClick={async () => {
-            await supabase.auth.signOut()
-            router.push('/login')
-          }}
-          className="w-full py-2 text-slate-400 hover:text-white text-sm transition-colors"
-        >
-          Sign Out ({user?.email})
-        </button>
-      </div>
+        <section className="grid grid-cols-3 gap-2">
+          <div className="bg-surface p-4 rounded-lg border border-outline-variant/40 flex flex-col items-center justify-center gap-1 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent to-error/5 pointer-events-none" />
+            <span className="material-symbols-outlined text-red-400 text-[32px]">local_fire_department</span>
+            <span className="font-heading text-[24px] text-on-surface font-bold">{questData.player.streak}</span>
+            <span className="font-heading text-[12px] text-on-surface-variant font-bold tracking-[0.1em] uppercase">
+              STREAK
+            </span>
+          </div>
+          <div className="bg-surface p-4 rounded-lg border border-outline-variant/40 flex flex-col items-center justify-center gap-1 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent to-primary-container/5 pointer-events-none" />
+            <span className="material-symbols-outlined text-primary-container text-[32px]">star</span>
+            <span className="font-heading text-[24px] text-on-surface font-bold">{questData.player.totalXp}</span>
+            <span className="font-heading text-[12px] text-on-surface-variant font-bold tracking-[0.1em] uppercase">
+              TOTAL XP
+            </span>
+          </div>
+          <div className="bg-surface p-4 rounded-lg border border-outline-variant/40 flex flex-col items-center justify-center gap-1 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent to-tertiary/5 pointer-events-none" />
+            <span className="material-symbols-outlined text-tertiary text-[32px]">toll</span>
+            <span className="font-heading text-[24px] text-on-surface font-bold">{questData.player.gold}</span>
+            <span className="font-heading text-[12px] text-on-surface-variant font-bold tracking-[0.1em] uppercase">
+              GOLD
+            </span>
+          </div>
+        </section>
+
+        <section className="flex flex-col gap-4">
+          <h3 className="font-heading text-[20px] text-on-surface uppercase border-b border-surface-container-high pb-2 flex items-center gap-2">
+            <span className="material-symbols-outlined text-primary-container">assignment</span>
+            Today&apos;s Quests
+          </h3>
+          <div className="flex flex-col gap-2">
+            {questData.quests[0].status === 'completed' && (
+              <div className="bg-surface/50 p-4 rounded-lg border border-surface-container-highest flex items-center justify-between opacity-70 grayscale-[50%]">
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-full bg-[#1b2a24] border border-[#2e5c46] flex items-center justify-center text-green-400">
+                    <span className="material-symbols-outlined">check_circle</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="font-heading text-[20px] text-on-surface line-through decoration-on-surface-variant">
+                      {questData.quests[0].name}
+                    </span>
+                    <span className="font-heading text-[12px] text-green-400 font-bold tracking-[0.1em] uppercase">
+                      +{questData.quests[0].xp} XP Earned
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {questData.quests[1].status === 'active' && (
+              <div className="bg-surface p-4 rounded-lg border border-primary-container shadow-[0_0_15px_rgba(0,212,255,0.2)] flex items-center justify-between relative overflow-hidden cursor-pointer hover:bg-surface-low transition-colors">
+                <div className="absolute inset-y-0 left-0 w-1 bg-primary-container" />
+                <div className="flex items-center gap-4 pl-2">
+                  <div className="w-10 h-10 rounded-full bg-primary-container/10 border border-primary-container/50 flex items-center justify-center text-primary-container">
+                    <span className="material-symbols-outlined">swords</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="font-heading text-[20px] text-primary-container text-glow">
+                      {questData.quests[1].name}
+                    </span>
+                    <span className="font-heading text-[12px] text-on-surface-variant font-bold tracking-[0.1em] uppercase">
+                      {questData.quests[1].completed} / {questData.quests[1].total} Sets Completed
+                    </span>
+                  </div>
+                </div>
+                <div className="font-heading text-[24px] text-primary-container font-bold">
+                  {questData.quests[1].xp}{' '}
+                  <span className="text-[14px] text-on-surface-variant font-normal">XP</span>
+                </div>
+              </div>
+            )}
+
+            {questData.quests[2].status === 'locked' && (
+              <div className="bg-surface p-4 rounded-lg border border-outline-variant/30 flex items-center justify-between opacity-80 cursor-not-allowed">
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-full bg-surface-container-highest border border-outline-variant/50 flex items-center justify-center text-on-surface-variant">
+                    <span className="material-symbols-outlined">lock</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="font-heading text-[20px] text-on-surface-variant">
+                      {questData.quests[2].name}
+                    </span>
+                    <span className="font-heading text-[12px] text-on-surface-variant font-bold tracking-[0.1em] uppercase">
+                      Unlocks at {questData.quests[2].unlockTime}
+                    </span>
+                  </div>
+                </div>
+                <div className="font-heading text-[24px] text-on-surface-variant font-bold">
+                  {questData.quests[2].xp}{' '}
+                  <span className="text-[14px] font-normal">XP</span>
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
+      </main>
+
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 flex justify-around items-center px-4 pb-6 pt-2 bg-[#0a0a0f]/90 backdrop-blur-xl border-t border-cyan-900/50 shadow-[0_-4px_20px_rgba(0,212,255,0.15)]">
+        <Link href="/" className="flex flex-col items-center justify-center text-cyan-400 bg-cyan-950/20 rounded-lg py-1 px-4 scale-110 transition-transform">
+          <span className="material-symbols-outlined">grid_view</span>
+          <span className="font-heading text-[10px] uppercase font-bold tracking-tight mt-1">Home</span>
+        </Link>
+        <Link href="/log" className="flex flex-col items-center justify-center text-slate-600 grayscale hover:bg-slate-900/50 rounded-lg py-1 px-4 transition-colors">
+          <span className="material-symbols-outlined">receipt_long</span>
+          <span className="font-heading text-[10px] uppercase font-bold tracking-tight mt-1">Quests</span>
+        </Link>
+        <Link href="/exercises" className="flex flex-col items-center justify-center text-slate-600 grayscale hover:bg-slate-900/50 rounded-lg py-1 px-4 transition-colors">
+          <span className="material-symbols-outlined">fitness_center</span>
+          <span className="font-heading text-[10px] uppercase font-bold tracking-tight mt-1">Exercises</span>
+        </Link>
+        <Link href="/profile" className="flex flex-col items-center justify-center text-slate-600 grayscale hover:bg-slate-900/50 rounded-lg py-1 px-4 transition-colors">
+          <span className="material-symbols-outlined">person</span>
+          <span className="font-heading text-[10px] uppercase font-bold tracking-tight mt-1">Profile</span>
+        </Link>
+      </nav>
     </div>
   )
 }
