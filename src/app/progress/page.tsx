@@ -3,14 +3,15 @@
 import { useState, useRef, useEffect } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
-import { Camera, ChevronLeft, ChevronRight, Upload } from 'lucide-react';
+import { Camera, ChevronLeft, ChevronRight, Upload, Plus } from 'lucide-react';
 
 export default function ProgressPage() {
   const [photos, setPhotos] = useState<{front: string | null, side: string | null, back: string | null}[]>([]);
-  const [selectedDay, setSelectedDay] = useState(1);
+  const [selectedDay, setSelectedDay] = useState(42);
   const [viewMode, setViewMode] = useState<'daily' | 'comparison'>('daily');
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [currentPhotoType, setCurrentPhotoType] = useState<'front' | 'side' | 'back'>('front');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   const supabase = createClient();
@@ -72,7 +73,7 @@ export default function ProgressPage() {
 
       await supabase.from('progress_photos').insert({
         user_id: user.id,
-        photo_type: 'front',
+        photo_type: currentPhotoType,
         photo_url: publicUrl,
         day_number: selectedDay
       });
@@ -85,110 +86,184 @@ export default function ProgressPage() {
     }
   };
 
-  const weekLabels = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
+  const handleUploadClick = (photoType: 'front' | 'side' | 'back') => {
+    setCurrentPhotoType(photoType);
+    fileInputRef.current?.click();
+  };
+
+  const currentPhotos = photos[selectedDay - 1] || { front: null, side: null, back: null };
   
+  const weekLabels = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
+  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  const currentDate = new Date();
+  currentDate.setDate(currentDate.getDate() - (30 - selectedDay));
+  const formattedDate = `${monthNames[currentDate.getMonth()]} ${currentDate.getDate()}, ${currentDate.getFullYear()}`;
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <div className="text-slate-400">Loading...</div>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-on-surface-variant">Loading...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 pb-20">
-      <div className="p-4">
-        <h1 className="text-2xl font-bold text-white mb-2">Progress Photos</h1>
-        <p className="text-slate-400 mb-6">Track your transformation daily</p>
-        
-        <div className="flex gap-2 mb-6">
-          {['daily', 'comparison'].map(mode => (
+    <div className="min-h-screen bg-background pb-20">
+      <main className="p-5 pt-6">
+        <section className="flex flex-col gap-4 mb-8">
+          <h2 className="font-heading text-4xl font-bold text-on-background tracking-tight">PROGRESS</h2>
+          
+          <div className="bg-surface-container rounded-lg p-1 flex gap-2 w-full max-w-sm border border-outline-variant/50 shadow-[0_0_15px_rgba(96,1,209,0.1)]">
             <button
-              key={mode}
-              onClick={() => setViewMode(mode as 'daily' | 'comparison')}
-              className={`flex-1 py-2 rounded-lg ${
-                viewMode === mode ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-400'
+              onClick={() => setViewMode('daily')}
+              className={`flex-1 py-2 rounded transition-all font-heading text-xs tracking-widest ${
+                viewMode === 'daily'
+                  ? 'bg-secondary-container/20 border border-secondary-container text-secondary shadow-[0_0_10px_rgba(96,1,209,0.2)]'
+                  : 'text-on-surface-variant hover:bg-surface-variant'
               }`}
             >
-              {mode === 'daily' ? 'Daily' : 'Comparison'}
+              DAILY VIEW
             </button>
-          ))}
-        </div>
-        
+            <button
+              onClick={() => setViewMode('comparison')}
+              className={`flex-1 py-2 rounded transition-all font-heading text-xs tracking-widest ${
+                viewMode === 'comparison'
+                  ? 'bg-secondary-container/20 border border-secondary-container text-secondary shadow-[0_0_10px_rgba(96,1,209,0.2)]'
+                  : 'text-on-surface-variant hover:bg-surface-variant'
+              }`}
+            >
+              WEEKLY COMP
+            </button>
+          </div>
+        </section>
+
         {viewMode === 'daily' ? (
           <>
-            <div className="flex items-center justify-between mb-4">
-              <button 
-                onClick={() => setSelectedDay(d => Math.max(1, d - 1))}
-                className="p-2 bg-slate-800 rounded-lg"
-              >
-                <ChevronLeft className="text-white" />
-              </button>
-              <span className="text-white font-bold">Day {selectedDay}</span>
-              <button 
-                onClick={() => setSelectedDay(d => Math.min(30, d + 1))}
-                className="p-2 bg-slate-800 rounded-lg"
-              >
-                <ChevronRight className="text-white" />
-              </button>
-            </div>
-            
-            <div className="grid grid-cols-3 gap-4">
-              {(['front', 'side', 'back'] as const).map(angle => (
-                <div key={angle} className="aspect-square bg-slate-900 rounded-xl flex flex-col items-center justify-center overflow-hidden">
-                  {photos[selectedDay - 1]?.[angle] ? (
-                    <img 
-                      src={photos[selectedDay - 1][angle]!} 
-                      alt={angle}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <>
-                      <Camera className="text-slate-500 mb-2" size={32} />
-                      <span className="text-slate-400 text-sm capitalize">{angle}</span>
-                    </>
-                  )}
+            <section className="flex flex-col gap-6">
+              <div className="flex items-center justify-between bg-surface-container-low p-4 rounded-lg border border-outline-variant">
+                <button 
+                  onClick={() => setSelectedDay(d => Math.max(1, d - 1))}
+                  className="text-on-surface-variant hover:text-primary transition-colors"
+                >
+                  <ChevronLeft size={24} />
+                </button>
+                <div className="text-center">
+                  <span className="font-heading text-xl text-primary">DAY {selectedDay}</span>
+                  <p className="text-on-surface-variant text-sm mt-1">{formattedDate}</p>
                 </div>
-              ))}
-            </div>
+                <button 
+                  onClick={() => setSelectedDay(d => Math.min(90, d + 1))}
+                  className="text-on-surface-variant hover:text-primary transition-colors"
+                >
+                  <ChevronRight size={24} />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {(['front', 'side', 'back'] as const).map(angle => (
+                  <div key={angle} className="relative aspect-[3/4] bg-surface-container rounded-xl border border-dashed border-outline flex flex-col items-center justify-center overflow-hidden group hover:bg-surface-variant transition-colors cursor-pointer"
+                    onClick={() => handleUploadClick(angle)}
+                  >
+                    {currentPhotos[angle] ? (
+                      <>
+                        <img 
+                          src={currentPhotos[angle]!} 
+                          alt={`${angle} view`}
+                          className="absolute inset-0 w-full h-full object-cover opacity-80"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                      </>
+                    ) : (
+                      <>
+                        <div className="w-16 h-16 rounded-full bg-surface-container-highest flex items-center justify-center group-hover:scale-110 transition-transform">
+                          <Camera className="text-outline" style={{ strokeWidth: 1 }} />
+                        </div>
+                        <span className="font-heading text-xs tracking-widest text-outline mt-2">ADD {angle.toUpperCase()} VIEW</span>
+                      </>
+                    )}
+                    <div className="absolute bottom-4 left-4 z-10">
+                      <span className="bg-surface-container-high/80 backdrop-blur px-2 py-1 rounded font-heading text-xs tracking-widest text-on-background border border-outline-variant">
+                        {angle.toUpperCase()}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            <section className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-8">
+              <div className="bg-surface p-4 rounded border border-outline-variant flex flex-col gap-1">
+                <span className="font-heading text-xs tracking-widest text-on-surface-variant">CURRENT WEIGHT</span>
+                <span className="font-heading text-2xl text-primary">
+                  185<span className="text-sm text-outline ml-1">LBS</span>
+                </span>
+              </div>
+              <div className="bg-surface p-4 rounded border border-outline-variant flex flex-col gap-1">
+                <span className="font-heading text-xs tracking-widest text-secondary">BODY FAT ESTIMATE</span>
+                <span className="font-heading text-2xl text-secondary">
+                  14<span className="text-sm text-outline ml-1">%</span>
+                </span>
+              </div>
+              <div className="bg-surface p-4 rounded border border-outline-variant flex flex-col gap-1">
+                <span className="font-heading text-xs tracking-widest text-on-surface-variant">STREAK</span>
+                <span className="font-heading text-2xl text-on-background">
+                  {selectedDay}<span className="text-sm text-outline ml-1">DAYS</span>
+                </span>
+              </div>
+            </section>
           </>
         ) : (
-          <div className="space-y-6">
+          <section className="space-y-6">
             {[1, 2, 3, 4].map(week => (
               <div key={week}>
-                <h3 className="text-white font-semibold mb-3">{weekLabels[week - 1]}</h3>
+                <h3 className="text-on-background font-heading font-semibold mb-3">{weekLabels[week - 1]}</h3>
                 <div className="grid grid-cols-3 gap-4">
                   {(['front', 'side', 'back'] as const).map(angle => (
-                    <div key={angle} className="aspect-square bg-slate-900 rounded-xl flex items-center justify-center">
-                      <Camera className="text-slate-500" size={24} />
+                    <div 
+                      key={angle} 
+                      className="aspect-[3/4] bg-surface-container rounded-xl border border-dashed border-outline flex flex-col items-center justify-center overflow-hidden group hover:bg-surface-variant transition-colors cursor-pointer"
+                      onClick={() => {
+                        setSelectedDay((week - 1) * 7 + 1);
+                        handleUploadClick(angle);
+                      }}
+                    >
+                      <div className="w-16 h-16 rounded-full bg-surface-container-highest flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <Camera className="text-outline" style={{ strokeWidth: 1 }} />
+                      </div>
+                      <span className="font-heading text-xs tracking-widest text-outline mt-2">{angle.toUpperCase()}</span>
                     </div>
                   ))}
                 </div>
               </div>
             ))}
-          </div>
+          </section>
         )}
-        
-        <button 
-          onClick={() => fileInputRef.current?.click()}
-          disabled={uploading}
-          className="fixed bottom-20 right-4 w-14 h-14 bg-blue-600 rounded-full flex items-center justify-center shadow-lg disabled:opacity-50"
-        >
-          {uploading ? (
-            <Upload size={24} className="text-white animate-pulse" />
-          ) : (
-            <Camera size={24} className="text-white" />
-          )}
-        </button>
-        <input 
-          type="file" 
-          ref={fileInputRef} 
-          className="hidden" 
-          accept="image/*" 
-          capture="environment"
-          onChange={handleFileChange}
-        />
-      </div>
+      </main>
+
+      <button 
+        onClick={() => {
+          const types: ('front' | 'side' | 'back')[] = ['front', 'side', 'back'];
+          const nextType = types[(types.indexOf(currentPhotoType) + 1) % 3];
+          handleUploadClick(nextType);
+        }}
+        disabled={uploading}
+        className="fixed bottom-20 right-5 w-14 h-14 bg-secondary-container rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(96,1,209,0.5)] hover:scale-110 transition-transform z-40 border border-secondary"
+      >
+        {uploading ? (
+          <Upload size={24} className="text-secondary animate-pulse" />
+        ) : (
+          <Plus size={24} className="text-secondary" />
+        )}
+      </button>
+      
+      <input 
+        type="file" 
+        ref={fileInputRef} 
+        className="hidden" 
+        accept="image/*" 
+        capture="environment"
+        onChange={handleFileChange}
+      />
     </div>
   );
 }
