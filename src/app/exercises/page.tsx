@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { exercises, muscleGroups, type Exercise } from '@/utils/exercises';
 import Link from 'next/link';
-import { Search, Play, Dumbbell } from 'lucide-react';
+import { Search, Dumbbell } from 'lucide-react';
 
 export default function ExercisesPage() {
   const [search, setSearch] = useState('');

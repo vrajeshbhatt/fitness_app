@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
-import { Dumbbell, Target, Clock, AlertCircle } from 'lucide-react';
+import { Dumbbell, Target, Clock } from 'lucide-react';
 
 export default function ProfilePage() {
   const [preferences, setPreferences] = useState({

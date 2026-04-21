@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { Camera, ChevronLeft, ChevronRight, Download, RefreshCw } from 'lucide-react';
+import { Camera, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export default function ProgressPage() {
-  const [photos, setPhotos] = useState<{front: string | null, side: string | null, back: string | null}[]>([]);
+  const [photos] = useState<{front: string | null, side: string | null, back: string | null}[]>([]);
   const [selectedDay, setSelectedDay] = useState(1);
   const [viewMode, setViewMode] = useState<'daily' | 'comparison'>('daily');
   const fileInputRef = useRef<HTMLInputElement>(null);

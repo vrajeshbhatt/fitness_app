@@ -1,8 +1,6 @@
-import type { Metadata } from "next";
-import localFont from "next/font/local";
 import "./globals.css";
 import Link from "next/link";
-import { Home, Dumbbell, LayoutDashboard, Calendar, BookOpen, Camera, User } from "lucide-react";
+import { Home, Calendar, BookOpen, Camera, User } from "lucide-react";
 
 function BottomNav() {
   return (
@@ -41,7 +39,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-slate-950 text-white min-h-screen pb-20`}
+        className="antialiased bg-slate-950 text-white min-h-screen pb-20"
       >
         {children}
         <BottomNav />

@@ -4,12 +4,8 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { CheckCircle, Play } from 'lucide-react';
 
-interface Props {
-  initialDay?: number;
-}
-
-export default function PlanPage({ initialDay = 1 }: Props) {
-  const [currentDay, setCurrentDay] = useState(initialDay);
+export default function PlanPage() {
+  const [currentDay] = useState(1);
   
   const days = Array.from({ length: 30 }, (_, i) => i + 1);
   const dayTypes = ['push', 'pull', 'legs', 'rest'];
