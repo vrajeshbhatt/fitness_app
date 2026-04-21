@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { createClient } from '@/utils/supabase/client'
+import { useRouter } from 'next/navigation'
 import { Swords, Footprints, Bed, Timer, Star, Zap } from 'lucide-react'
 
 type QuestStatus = 'in_progress' | 'completed' | 'skipped'
@@ -19,45 +21,6 @@ interface Quest {
   goldReward: number
 }
 
-const mockQuests: Quest[] = [
-  {
-    id: '1',
-    title: 'Strength Training',
-    description: 'Complete 100 Push-ups.',
-    type: 'main',
-    status: 'in_progress',
-    currentProgress: 45,
-    targetProgress: 100,
-    unit: '',
-    xpReward: 50,
-    goldReward: 10,
-  },
-  {
-    id: '2',
-    title: 'Cardio Vascular',
-    description: 'Run 5 Kilometers.',
-    type: 'main',
-    status: 'completed',
-    currentProgress: 5,
-    targetProgress: 5,
-    unit: 'km',
-    xpReward: 100,
-    goldReward: 0,
-  },
-  {
-    id: '3',
-    title: 'Recovery Phase',
-    description: 'Take a full rest day.',
-    type: 'rest',
-    status: 'skipped',
-    currentProgress: 0,
-    targetProgress: 1,
-    unit: '',
-    xpReward: 0,
-    goldReward: 0,
-  },
-]
-
 const questIcons: Record<QuestType, React.ElementType> = {
   main: Swords,
   side: Footprints,
@@ -66,8 +29,54 @@ const questIcons: Record<QuestType, React.ElementType> = {
 
 export default function QuestsPage() {
   const [timeRemaining, setTimeRemaining] = useState('14:23:59')
-  const [quests, setQuests] = useState<Quest[]>(mockQuests)
-  const [energy] = useState({ current: 75, max: 100 })
+  const [quests, setQuests] = useState<Quest[]>([])
+  const [energy, setEnergy] = useState({ current: 75, max: 100 })
+  const router = useRouter()
+  const supabase = createClient()
+  const today = new Date().toISOString().split('T')[0]
+
+  useEffect(() => {
+    const loadData = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        router.push('/login')
+        return
+      }
+
+      const { data: questsData } = await supabase
+        .from('daily_quests')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('date', today)
+
+      if (questsData && questsData.length > 0) {
+        setQuests(questsData.map(q => ({
+          id: q.id,
+          title: q.title,
+          description: q.description,
+          type: q.type,
+          status: q.completed ? 'completed' : 'in_progress',
+          currentProgress: q.progress,
+          targetProgress: q.target,
+          unit: '',
+          xpReward: q.xp_reward,
+          goldReward: q.gold_reward,
+        })))
+      }
+
+      const { data: progress } = await supabase
+        .from('user_progress')
+        .select('energy')
+        .eq('user_id', user.id)
+        .single()
+
+      if (progress) {
+        setEnergy({ current: progress.energy || 75, max: 100 })
+      }
+    }
+
+    loadData()
+  }, [supabase, router, today])
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -91,10 +100,32 @@ export default function QuestsPage() {
     return () => clearInterval(timer)
   }, [])
 
-  const handleClaim = (questId: string) => {
-    setQuests((prev) =>
-      prev.map((q) => (q.id === questId ? { ...q, status: 'in_progress' as QuestStatus } : q))
-    )
+  const handleClaim = async (questId: string) => {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+
+    const quest = quests.find(q => q.id === questId)
+    if (!quest || quest.status !== 'completed') return
+
+    const { data: progress } = await supabase
+      .from('user_progress')
+      .select('*')
+      .eq('user_id', user.id)
+      .single()
+
+    if (progress) {
+      await supabase
+        .from('user_progress')
+        .update({
+          xp: (progress.xp || 0) + quest.xpReward,
+          gold: (progress.gold || 0) + quest.goldReward,
+        })
+        .eq('user_id', user.id)
+    }
+
+    setQuests(prev => prev.map(q => 
+      q.id === questId ? { ...q, status: 'in_progress' } : q
+    ))
   }
 
   return (

@@ -9,14 +9,21 @@ interface DashboardClientProps {
   fatigue: MuscleFatigue[]
   recommendedMuscles: string[]
   chartData: Array<{ day: string; workouts: number }>
+  userProgress?: Record<string, unknown> | null
 }
 
 export default function DashboardClient({ 
   logs, 
   fatigue, 
   recommendedMuscles,
-  chartData 
+  chartData,
+  userProgress 
 }: DashboardClientProps) {
+  const level = userProgress?.level as number | undefined
+  const xp = userProgress?.xp as number | undefined
+  const gold = userProgress?.gold as number | undefined
+  const streak = userProgress?.streak as number | undefined
+
   return (
     <div className="min-h-screen p-4 pb-20">
       <div className="max-w-md mx-auto space-y-6">
@@ -24,6 +31,29 @@ export default function DashboardClient({
           <h1 className="text-2xl font-bold text-white">Dashboard</h1>
           <p className="text-slate-400">Track your progress</p>
         </header>
+
+        {userProgress && (
+          <section className="bg-slate-800 rounded-xl p-4 border border-slate-700">
+            <div className="grid grid-cols-4 gap-2 text-center">
+              <div>
+                <div className="text-lg font-bold text-blue-400">{level || 1}</div>
+                <div className="text-xs text-slate-400">Level</div>
+              </div>
+              <div>
+                <div className="text-lg font-bold text-yellow-400">{xp || 0}</div>
+                <div className="text-xs text-slate-400">XP</div>
+              </div>
+              <div>
+                <div className="text-lg font-bold text-yellow-600">{gold || 0}</div>
+                <div className="text-xs text-slate-400">Gold</div>
+              </div>
+              <div>
+                <div className="text-lg font-bold text-orange-400">{streak || 0}</div>
+                <div className="text-xs text-slate-400">Streak</div>
+              </div>
+            </div>
+          </section>
+        )}
 
         <section className="bg-slate-900 rounded-xl p-4 border border-slate-800">
           <div className="flex items-center gap-2 mb-4">

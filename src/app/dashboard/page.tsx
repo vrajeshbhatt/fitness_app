@@ -53,14 +53,21 @@ async function getData() {
     `)
     .order('created_at', { ascending: false }) as { data: WorkoutLog[] | null }
 
+  const { data: progress } = await supabase
+    .from('user_progress')
+    .select('*')
+    .eq('user_id', user.id)
+    .single()
+
   return {
     recentLogs: logs || [],
     allLogs: allLogs || [],
+    userProgress: progress,
   }
 }
 
 export default async function DashboardPage() {
-  const { recentLogs, allLogs } = await getData()
+  const { recentLogs, allLogs, userProgress } = await getData()
   
   const fatigue = calculateMuscleFatigue(allLogs)
   const recommendedMuscles = getRecommendedMuscles(fatigue)
@@ -82,6 +89,7 @@ export default async function DashboardPage() {
       fatigue={fatigue}
       recommendedMuscles={recommendedMuscles}
       chartData={chartData}
+      userProgress={userProgress}
     />
   )
 }

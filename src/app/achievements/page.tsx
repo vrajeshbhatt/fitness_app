@@ -1,6 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { createClient } from '@/utils/supabase/client'
+import { useRouter } from 'next/navigation'
 import { Award, Shield, Lock, HelpCircle, Star, Coins } from 'lucide-react'
 
 type AchievementTier = 'platinum' | 'gold' | 'silver' | 'bronze'
@@ -21,74 +23,6 @@ interface Achievement {
   goldReward: number
 }
 
-const mockAchievements: Achievement[] = [
-  {
-    id: '1',
-    name: 'Iron Will',
-    description: 'Complete 30 consecutive daily quests.',
-    category: 'streaks',
-    tier: 'platinum',
-    status: 'completed',
-    currentProgress: 30,
-    targetProgress: 30,
-    unit: '',
-    xpReward: 500,
-    goldReward: 100,
-  },
-  {
-    id: '2',
-    name: 'Beast Master',
-    description: 'Lift a total of 10,000 kg.',
-    category: 'muscles',
-    tier: 'gold',
-    status: 'in_progress',
-    currentProgress: 6420,
-    targetProgress: 10000,
-    unit: 'kg',
-    xpReward: 300,
-    goldReward: 0,
-  },
-  {
-    id: '3',
-    name: 'Endurance',
-    description: 'Run 50km total distance.',
-    category: 'muscles',
-    tier: 'silver',
-    status: 'in_progress',
-    currentProgress: 15,
-    targetProgress: 50,
-    unit: 'km',
-    xpReward: 150,
-    goldReward: 0,
-  },
-  {
-    id: '4',
-    name: 'Mystery Achievement',
-    description: 'Condition not yet met. Keep pushing.',
-    category: 'special',
-    tier: 'bronze',
-    status: 'locked',
-    currentProgress: 0,
-    targetProgress: 100,
-    unit: '',
-    xpReward: 0,
-    goldReward: 0,
-  },
-  {
-    id: '5',
-    name: 'Boss Hunter',
-    description: 'Defeat the ultimate boss.',
-    category: 'special',
-    tier: 'platinum',
-    status: 'locked',
-    currentProgress: 0,
-    targetProgress: 1,
-    unit: '',
-    xpReward: 1000,
-    goldReward: 500,
-  },
-]
-
 const tierColors: Record<AchievementTier, { text: string; glow: string }> = {
   platinum: { text: '#a8e8ff', glow: 'rgba(168, 232, 255, 0.8)' },
   gold: { text: '#ffdd4c', glow: 'rgba(255, 221, 76, 0.5)' },
@@ -105,8 +39,44 @@ const tierIcons: Record<AchievementTier, React.ElementType> = {
 
 export default function AchievementsPage() {
   const [activeFilter, setActiveFilter] = useState<AchievementCategory>('all')
+  const [achievements, setAchievements] = useState<Achievement[]>([])
+  const router = useRouter()
+  const supabase = createClient()
 
-  const filteredAchievements = mockAchievements.filter(
+  useEffect(() => {
+    const loadData = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        router.push('/login')
+        return
+      }
+
+      const { data: achievementsData } = await supabase
+        .from('user_achievements')
+        .select('*')
+        .eq('user_id', user.id)
+
+      if (achievementsData && achievementsData.length > 0) {
+        setAchievements(achievementsData.map(a => ({
+          id: a.achievement_id,
+          name: a.name,
+          description: a.description,
+          category: 'all' as AchievementCategory,
+          tier: a.tier,
+          status: a.unlocked ? 'completed' : a.progress > 0 ? 'in_progress' : 'locked',
+          currentProgress: a.progress,
+          targetProgress: a.target,
+          unit: '',
+          xpReward: a.xp_reward,
+          goldReward: a.gold_reward,
+        })))
+      }
+    }
+
+    loadData()
+  }, [supabase, router])
+
+  const filteredAchievements = achievements.filter(
     (a) => activeFilter === 'all' || a.category === activeFilter
   )
 

@@ -86,8 +86,52 @@ export default function LogPage() {
     setMessage({ type: '', text: '' })
 
     try {
-      console.log('Completing workout with sets:', exerciseSets)
-      setMessage({ type: 'success', text: 'Workout completed successfully!' })
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        router.push('/login')
+        return
+      }
+
+      const completedSets = exerciseSets.filter(s => s.completed)
+      const totalSets = completedSets.length
+      const totalReps = completedSets.reduce((sum, s) => sum + (parseInt(s.reps) || 0), 0)
+
+      await supabase.from('workout_logs').insert({
+        user_id: user.id,
+        exercise_id: 'barbell-deadlift',
+        sets: totalSets,
+        reps: totalReps,
+        rpe: 7,
+      })
+
+      const { data: progress } = await supabase
+        .from('user_progress')
+        .select('*')
+        .eq('user_id', user.id)
+        .single()
+
+      if (progress) {
+        const xpEarned = 50 + totalSets * 10 + totalReps * 2
+        const newXP = (progress.xp || 0) + xpEarned
+        const newGold = (progress.gold || 0) + 10
+        const newStreak = progress.streak || 0
+        const newTotal = (progress.total_workouts || 0) + 1
+        const newLevel = Math.floor(newXP / 15000) + 1
+
+        await supabase
+          .from('user_progress')
+          .update({
+            xp: newXP,
+            gold: newGold,
+            streak: newStreak + 1,
+            total_workouts: newTotal,
+            level: newLevel,
+            last_workout_date: new Date().toISOString(),
+          })
+          .eq('user_id', user.id)
+      }
+
+      setMessage({ type: 'success', text: `Workout completed! +${50 + totalSets * 10 + totalReps * 2} XP` })
       setTimeout(() => router.push('/dashboard'), 1500)
     } catch (err) {
       setMessage({ type: 'error', text: err instanceof Error ? err.message : 'Failed to complete workout' })
