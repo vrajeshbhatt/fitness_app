@@ -37,7 +37,7 @@ export const exercises: Exercise[] = [
           'Push back to starting position',
           'Repeat for prescribed reps'
         ],
-        gifUrl: '/exercises/gifs/push-up-beginner.gif',
+        gifUrl: 'https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExM2Q0eHhycTdpNXhnaHozMTVnaXJlOXJrMWt3MDh4c2Q4eDByYjg2MCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3ohze1qkqPZHMrEuwo/200.gif',
         targetMuscles: ['Chest', 'Triceps'],
         difficulty: 2
       },
@@ -53,7 +53,7 @@ export const exercises: Exercise[] = [
           'Push back up to starting position',
           'Repeat for prescribed reps'
         ],
-        gifUrl: '/exercises/gifs/push-up-intermediate.gif',
+        gifUrl: 'https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExM2Q0eHhycTdpNXhnaHozMTVnaXJlOXJrMWt3MDh4c2Q4eDByYjg2MCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/Dv5qzri4zAFEs/200.gif',
         targetMuscles: ['Chest', 'Triceps', 'Shoulders'],
         difficulty: 5
       },
@@ -69,7 +69,7 @@ export const exercises: Exercise[] = [
           'Push back up explosively',
           'Repeat for prescribed reps'
         ],
-        gifUrl: '/exercises/gifs/push-up-pro.gif',
+        gifUrl: 'https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExM2Q0eHhycTdpNXhnaHozMTVnaXJlOXJrMWt3MDh4c2Q4eDByYjg2MCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/tmhKEu9RHR1nBwYJ0X/200.gif',
         targetMuscles: ['Chest', 'Triceps'],
         difficulty: 8
       }
@@ -207,7 +207,7 @@ export const exercises: Exercise[] = [
           'Lower slowly',
           'Repeat'
         ],
-        gifUrl: '',
+        gifUrl: 'https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExaDdpMnVwdTl6bnAwbGtkazVuemI4cXpndHQ0a200MnY3aXh4a3R2dyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/xUPGcD1LxZUkKUMOB2/200.gif',
         targetMuscles: ['Back', 'Biceps'],
         difficulty: 4
       },
@@ -223,7 +223,7 @@ export const exercises: Exercise[] = [
           'Lower with control',
           'Repeat'
         ],
-        gifUrl: '',
+        gifUrl: 'https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExaDdpMnVwdTl6bnAwbGtkazVuemI4cXpndHQ0a200MnY3aXh4a3R2dyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/gaiyVwiUzdaY8/200.gif',
         targetMuscles: ['Back', 'Biceps'],
         difficulty: 7
       },
@@ -239,7 +239,7 @@ export const exercises: Exercise[] = [
           'Lower with control',
           'Repeat'
         ],
-        gifUrl: '',
+        gifUrl: 'https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExaDdpMnVwdTl6bnAwbGtkazVuemI4cXpndHQ0a200MnY3aXh4a3R2dyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/HMMwDkbqrtmZwQBNQB/200.gif',
         targetMuscles: ['Back', 'Chest', 'Biceps'],
         difficulty: 10
       }
@@ -376,7 +376,7 @@ export const exercises: Exercise[] = [
           'Stand back up',
           'Repeat'
         ],
-        gifUrl: '',
+        gifUrl: 'https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExZW43bmNkdmduazJzb2VjM2locTdzOXA4cGh0em15NnlsbTdzcnpueiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3OBeP8JlGkQLtnr3ZW/200.gif',
         targetMuscles: ['Quadriceps', 'Glutes'],
         difficulty: 2
       },
@@ -392,7 +392,7 @@ export const exercises: Exercise[] = [
           'Drive through heels',
           'Repeat'
         ],
-        gifUrl: '',
+        gifUrl: 'https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExZW43bmNkdmduazJzb2VjM2locTdzOXA4cGh0em15NnlsbTdzcnpueiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/tHyPJtOwPChKmF0LKg/giphy.gif',
         targetMuscles: ['Quadriceps', 'Glutes', 'Core'],
         difficulty: 5
       },
@@ -408,7 +408,7 @@ export const exercises: Exercise[] = [
           'Stand back up',
           'Repeat both sides'
         ],
-        gifUrl: '',
+        gifUrl: 'https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExZW43bmNkdmduazJzb2VjM2locTdzOXA4cGh0em15NnlsbTdzcnpueiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/13v55Ya4uWsXS/giphy.gif',
         targetMuscles: ['Quadriceps', 'Glutes'],
         difficulty: 10
       }

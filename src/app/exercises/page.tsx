@@ -51,11 +51,14 @@ export default function ExercisesPage() {
         {filtered.map((ex: Exercise) => (
           <Link key={ex.id} href={`/exercises/${ex.id}`}>
             <div className="bg-slate-900 rounded-xl p-4 border border-slate-800 hover:border-blue-500 transition-colors h-full">
-              <div className="aspect-square bg-slate-800 rounded-lg mb-3 flex items-center justify-center">
-                {ex.levels[1]?.gifUrl ? (
+              <div className="aspect-square bg-slate-800 rounded-lg mb-3 flex items-center justify-center overflow-hidden">
+                {ex.levels[1]?.gifUrl && ex.levels[1].gifUrl.startsWith('/') ? (
                   <img src={ex.levels[1].gifUrl} alt={ex.name} className="w-full h-full object-cover rounded-lg" />
                 ) : (
-                  <Dumbbell className="text-slate-500" size={32} />
+                  <div className="flex flex-col items-center justify-center">
+                    <Dumbbell className="text-slate-500" size={32} />
+                    <span className="text-xs text-slate-500 mt-1">{ex.name}</span>
+                  </div>
                 )}
               </div>
               <h3 className="font-semibold text-white mb-1">{ex.name}</h3>
