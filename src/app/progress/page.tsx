@@ -1,16 +1,100 @@
 'use client';
 
-import { useState, useRef } from 'react';
-import { Camera, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { createClient } from '@/utils/supabase/client';
+import { useRouter } from 'next/navigation';
+import { Camera, ChevronLeft, ChevronRight, Upload } from 'lucide-react';
 
 export default function ProgressPage() {
-  const [photos] = useState<{front: string | null, side: string | null, back: string | null}[]>([]);
+  const [photos, setPhotos] = useState<{front: string | null, side: string | null, back: string | null}[]>([]);
   const [selectedDay, setSelectedDay] = useState(1);
   const [viewMode, setViewMode] = useState<'daily' | 'comparison'>('daily');
+  const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+  const router = useRouter();
+  const supabase = createClient();
+
+  const loadPhotos = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      router.push('/login');
+      return;
+    }
+    
+    const { data } = await supabase
+      .from('progress_photos')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('day_number');
+    
+    if (data && data.length > 0) {
+      const grouped: Record<number, {front: string | null, side: string | null, back: string | null}> = {};
+      data.forEach((photo: {photo_type: string, photo_url: string, day_number: number}) => {
+        if (!grouped[photo.day_number]) {
+          grouped[photo.day_number] = { front: null, side: null, back: null };
+        }
+        grouped[photo.day_number][photo.photo_type as 'front' | 'side' | 'back'] = photo.photo_url;
+      });
+      setPhotos(Object.values(grouped));
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    loadPhotos();
+  }, [supabase, router]);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        router.push('/login');
+        return;
+      }
+
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('progress-photos')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('progress-photos')
+        .getPublicUrl(fileName);
+
+      await supabase.from('progress_photos').insert({
+        user_id: user.id,
+        photo_type: 'front',
+        photo_url: publicUrl,
+        day_number: selectedDay
+      });
+
+      await loadPhotos();
+    } catch (error) {
+      console.error('Upload error:', error);
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const weekLabels = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
   
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <div className="text-slate-400">Loading...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-950 pb-20">
       <div className="p-4">
@@ -87,9 +171,14 @@ export default function ProgressPage() {
         
         <button 
           onClick={() => fileInputRef.current?.click()}
-          className="fixed bottom-20 right-4 w-14 h-14 bg-blue-600 rounded-full flex items-center justify-center shadow-lg"
+          disabled={uploading}
+          className="fixed bottom-20 right-4 w-14 h-14 bg-blue-600 rounded-full flex items-center justify-center shadow-lg disabled:opacity-50"
         >
-          <Camera size={24} className="text-white" />
+          {uploading ? (
+            <Upload size={24} className="text-white animate-pulse" />
+          ) : (
+            <Camera size={24} className="text-white" />
+          )}
         </button>
         <input 
           type="file" 
@@ -97,6 +186,7 @@ export default function ProgressPage() {
           className="hidden" 
           accept="image/*" 
           capture="environment"
+          onChange={handleFileChange}
         />
       </div>
     </div>

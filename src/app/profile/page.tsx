@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
 import { Dumbbell, Target, Clock } from 'lucide-react';
@@ -13,11 +13,49 @@ export default function ProfilePage() {
     minutesPerWorkout: 45,
     injuries: [] as string[]
   });
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const router = useRouter();
   const supabase = createClient();
-  
+
+  useEffect(() => {
+    const loadPreferences = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        router.push('/login');
+        return;
+      }
+      
+      const { data } = await supabase
+        .from('user_preferences')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+      
+      if (data) {
+        setPreferences({
+          fitnessLevel: data.fitness_level || 'intermediate',
+          goal: data.goal || 'muscle',
+          workoutDays: data.workout_days_per_week || 4,
+          minutesPerWorkout: data.minutes_per_workout || 45,
+          injuries: data.injuries || []
+        });
+      }
+      setLoading(false);
+    };
+    
+loadPreferences();
+  }, [supabase, router]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <div className="text-slate-400">Loading...</div>
+      </div>
+    );
+  }
+   
   const savePreferences = async () => {
     setSaving(true);
     try {
@@ -29,9 +67,13 @@ export default function ProfilePage() {
       
       await supabase.from('user_preferences').upsert({
         user_id: user.id,
-        ...preferences,
+        fitness_level: preferences.fitnessLevel,
+        goal: preferences.goal,
+        workout_days_per_week: preferences.workoutDays,
+        minutes_per_workout: preferences.minutesPerWorkout,
+        injuries: preferences.injuries,
         updated_at: new Date().toISOString()
-      });
+      }, { onConflict: 'user_id' });
       
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
