@@ -38,6 +38,7 @@ supabase/local/
 
 # Vercel
 .vercel
+.env.vercel
 
 # TypeScript
 *.tsbuildinfo
