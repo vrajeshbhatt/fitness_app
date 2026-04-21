@@ -1,6 +1,6 @@
 import "./globals.css";
 import Link from "next/link";
-import { Home, Swords, Calendar, BookOpen, Award } from "lucide-react";
+import { Home, Swords, Calendar, BookOpen, Award, Trophy } from "lucide-react";
 import { Space_Grotesk, Lexend } from "next/font/google";
 
 const spaceGrotesk = Space_Grotesk({
@@ -38,6 +38,10 @@ function BottomNav() {
         <Link href="/achievements" className="flex flex-col items-center justify-center w-14 py-2 text-slate-400 hover:text-cyan-400 transition-colors">
           <Award size={20} />
           <span className="text-xs mt-1 font-['Space_Grotesk'] uppercase font-bold tracking-tighter">Badges</span>
+        </Link>
+        <Link href="/leaderboard" className="flex flex-col items-center justify-center w-14 py-2 text-slate-400 hover:text-cyan-400 transition-colors">
+          <Trophy size={20} />
+          <span className="text-xs mt-1 font-['Space_Grotesk'] uppercase font-bold tracking-tighter">Ranks</span>
         </Link>
       </div>
     </nav>
